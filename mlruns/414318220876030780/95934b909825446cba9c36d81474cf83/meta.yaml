@@ -1,0 +1,15 @@
+artifact_uri: file:///Users/leandrohermann/Library/CloudStorage/OneDrive-Personal/ITBA/Big
+  Data/tp/itba-bigdata/notebooks/../mlruns/414318220876030780/95934b909825446cba9c36d81474cf83/artifacts
+end_time: 1762745283500
+entry_point_name: ''
+experiment_id: '414318220876030780'
+lifecycle_stage: active
+run_id: 95934b909825446cba9c36d81474cf83
+run_name: bronze_ingestion
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1762745281982
+status: 3
+tags: []
+user_id: leandrohermann
