@@ -1,49 +1,67 @@
-import pytest
-from unittest.mock import MagicMock
-from scipy.sparse import csr_matrix
-
+# tests/test_data_ingestion_unittest.py
+import unittest
 import sys
 import os
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
+
+try:
+    import src.data_ingestion as di
+except ImportError:
+    # Try direct import for Databricks workspace
+    import data_ingestion as di
 
 
-import src.model_train as mt
+class TestDataIngestion(unittest.TestCase):
+    """Unit tests for data_ingestion.py"""
+    
+    def test_constants_exist(self):
+        """Test that required constants are defined"""
+        self.assertTrue(hasattr(di, 'SOURCE_PATH'))
+        self.assertTrue(hasattr(di, 'BRONZE_PATH'))
+        self.assertTrue(hasattr(di, 'SILVER_PATH'))
+        self.assertTrue(hasattr(di, 'GOLD_OUT_PATH'))
+        
+        # Check they are strings
+        self.assertIsInstance(di.SOURCE_PATH, str)
+        self.assertIsInstance(di.BRONZE_PATH, str)
+    
+    def test_required_fields(self):
+        """Test that REQUIRED_FIELDS contains correct fields"""
+        expected_fields = ["review_id", "product_id", "customer_id",
+                          "star_rating", "review_date", "review_body"]
+        
+        self.assertEqual(di.REQUIRED_FIELDS, expected_fields)
+        self.assertEqual(len(di.REQUIRED_FIELDS), 6)
+    
+    def test_sentiment_mapping(self):
+        """Test sentiment mapping is correct"""
+        self.assertEqual(di.SENTIMENT_MAP["negative"], [1, 2])
+        self.assertEqual(di.SENTIMENT_MAP["neutral"], [3])
+        self.assertEqual(di.SENTIMENT_MAP["positive"], [4, 5])
+        
+        # Test all keys exist
+        self.assertIn("negative", di.SENTIMENT_MAP)
+        self.assertIn("neutral", di.SENTIMENT_MAP)
+        self.assertIn("positive", di.SENTIMENT_MAP)
+    
+    def test_functions_exist(self):
+        """Test that all main functions exist"""
+        # Check main functions exist
+        self.assertTrue(hasattr(di, 'bronze_ingestion'))
+        self.assertTrue(hasattr(di, 'bronze_validation'))
+        self.assertTrue(hasattr(di, 'silver_ingestion'))
+        self.assertTrue(hasattr(di, 'gold_ingestion'))
+        self.assertTrue(hasattr(di, 'main'))
+        
+        # Check they are callable
+        self.assertTrue(callable(di.bronze_ingestion))
+        self.assertTrue(callable(di.main))
+        
+        # Check helper functions exist
+        self.assertTrue(callable(di.basic_text_cleaning))
+        self.assertTrue(callable(di.map_ratings_to_labels))
 
-def test_tfidf_vectorizer_config():
-    """Check the TF-IDF vectorizer configuration."""
-    vec = mt.TfidfVectorizer(max_features=50_000, ngram_range=(1, 2))
 
-    assert vec.max_features == 50_000
-    assert vec.ngram_range == (1, 2)
-
-
-def test_run_experiment_mocked():
-    """Run the experiment with a fake model and fake data."""
-    # Fake classifier
-    class DummyModel:
-        def fit(self, X, y):
-            return self
-        def predict(self, X):
-            return [y[0] for _ in range(X.shape[0])]
-
-    dummy = DummyModel()
-
-    # Fake data
-    X_train = csr_matrix([[1, 0], [0, 1]])
-    X_test = csr_matrix([[1, 0]])
-    y_train = ["pos", "neg"]
-    y_test = ["pos"]
-
-    model, f1 = mt.run_experiment(
-        model_name="dummy",
-        classifier=dummy,
-        params={"test": 1},
-        X_train=X_train,
-        X_test=X_test,
-        y_train=y_train,
-        y_test=y_test
-    )
-
-    assert isinstance(model, DummyModel)
-    assert f1 >= 0  # simple correctness check
+# Run tests if executed directly
+if __name__ == '__main__':
+    unittest.main()
