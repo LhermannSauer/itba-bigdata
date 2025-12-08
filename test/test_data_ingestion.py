@@ -2,6 +2,11 @@ import pytest
 from unittest.mock import MagicMock
 import pyspark.sql.functions as F
 
+import sys
+import os
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
+
 # Import module
 import src.data_ingestion as di
 

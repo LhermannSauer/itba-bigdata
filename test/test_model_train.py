@@ -2,8 +2,13 @@ import pytest
 from unittest.mock import MagicMock
 from scipy.sparse import csr_matrix
 
-import src.model_train as mt
+import sys
+import os
 
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
+
+
+import src.model_train as mt
 
 def test_tfidf_vectorizer_config():
     """Check the TF-IDF vectorizer configuration."""
