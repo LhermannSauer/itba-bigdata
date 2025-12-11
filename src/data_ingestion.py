@@ -7,7 +7,6 @@ from pyspark.sql.types import *
 from pyspark.sql import DataFrame
 from pyspark.sql.window import Window
 
-
 SOURCE_PATH = "/Volumes/workspace/sentiment_analysis/raw"
 BRONZE_PATH = "/Volumes/workspace/sentiment_analysis/bronze"
 SILVER_PATH = "/Volumes/workspace/sentiment_analysis/silver"
@@ -22,7 +21,6 @@ SENTIMENT_MAP = {
     "neutral": [3],
     "positive": [4, 5]
 }
-
 
 mlflow.set_registry_uri("databricks-uc")
 mlflow.set_tracking_uri("databricks")
