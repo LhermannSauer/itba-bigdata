@@ -44,9 +44,36 @@ Registrado en MLflow Tracking:
 
 ## Selección del Modelo Final
 La selección se basó en:
-- F1 Macro como métrica principal.
-- Robustez del modelo ante clases desbalanceadas.
-- Eficiencia dentro de las restricciones de Databricks Serverless.
-- Estabilidad del entrenamiento en grandes volúmenes de datos vectorizados.
+
+## CI / GitHub Actions
+
+Agregué varios workflows en la rama `feature/git_actions` para ayudar con el desarrollo y las revisiones:
+
+- `.github/workflows/lint.yml`: comprobaciones de estilo y lint (black, isort, ruff) y ejecución de `pre-commit`.
+- `.github/workflows/daily-smoke.yml`: pruebas smoke diarias; ahora también se puede ejecutar manualmente desde la UI.
+- `.github/workflows/ci.yml`: CI básico que instala dependencias y ejecuta tests.
+- `.github/workflows/codeql.yml`: análisis de seguridad con CodeQL.
+- `.github/dependabot.yml`: actualizaciones automáticas de dependencias.
+- `requirements-ci.txt`: lista ligera para runs rápidos en CI (evita instalar `pyspark`/`mlflow`).
+- `.pre-commit-config.yaml`: hooks para aplicar formato y checks antes de los commits.
+
+Probar localmente (PowerShell)
+
+1) Crear un entorno virtual (recomiendo Python 3.10/3.11) e instalar herramientas ligeras:
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1  # o usar activate.bat en cmd
+python -m pip install --upgrade pip
+pip install -r requirements-ci.txt
+```
+
+2) Comandos útiles:
+```powershell
+python -m pytest -q
+python -m pre_commit run --all-files
+python -m black --check .
+python -m isort --check-only .
+python -m ruff check src test
+```
 
 
