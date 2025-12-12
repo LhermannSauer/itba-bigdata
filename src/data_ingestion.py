@@ -84,6 +84,7 @@ def read_source(spark) -> DataFrame:
     -------
     DataFrame
         A Spark DataFrame with the bronze schema applied.
+
     """
     logging.info(f"Reading source data from {SOURCE_PATH}")
     df = (

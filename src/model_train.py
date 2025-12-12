@@ -77,6 +77,7 @@ def run_experiment(
     -------
     Tuple[estimator, float]
         The trained model and the F1 score on the test set.
+
     """
     # ---- MLflow experiment ----
     with mlflow.start_run(run_name=f"{model_name}"):
