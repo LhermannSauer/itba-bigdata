@@ -68,8 +68,10 @@ def run_experiment(model_name, classifier, params: dict,
         mlflow.log_metric("recall", recall)
         mlflow.log_metric("f1_score", f1)
 
-        # ---- Log model artifact ----
-        mlflow.sklearn.log_model(model, artifact_path=model_name)
+        # ---- Log model artifact with signature (required for Unity Catalog) ----
+        from mlflow.models.signature import infer_signature
+        signature = infer_signature(X_test, y_pred)
+        mlflow.sklearn.log_model(model, artifact_path=model_name, signature=signature)
 
         print(f"{model_name} | F1 = {f1:.4f}")
 
