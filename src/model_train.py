@@ -6,6 +6,8 @@ import pandas as pd
 from sklearn.metrics import f1_score, precision_score, recall_score
 from pathlib import Path
 from typing import Dict, Any
+from mlflow.models.signature import infer_signature
+from pyspark.sql import SparkSession
 
 # MODELS
 from sklearn.linear_model import LogisticRegression
@@ -13,7 +15,8 @@ from sklearn.svm import LinearSVC
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.svm import SVC
-
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
 # Paths and constants
 DATA_PATH = "/Volumes/workspace/sentiment_analysis/gold"
 EXPERIMENT_NAME = "sentiment_baselines"
@@ -24,6 +27,12 @@ TEXT_COL = "clean_text"
 # Model save locations
 mlflow.set_registry_uri("databricks-uc")
 mlflow.set_tracking_uri("databricks")
+
+# Ensure a SparkSession is available when running outside Databricks
+try:
+    spark
+except NameError:
+    spark = SparkSession.builder.master("local[1]").appName("itba-bigdata").getOrCreate()
 
 # Load data
 print(f"Loading parquet from {DATA_PATH}")
@@ -69,7 +78,6 @@ def run_experiment(model_name, classifier, params: dict,
         mlflow.log_metric("f1_score", f1)
 
         # ---- Log model artifact with signature (required for Unity Catalog) ----
-        from mlflow.models.signature import infer_signature
         signature = infer_signature(X_test, y_pred)
         mlflow.sklearn.log_model(model, artifact_path=model_name, signature=signature)
 
@@ -108,8 +116,6 @@ df_sample = df_sample.select("clean_text", "sentiment_label")
 pdf = df_sample.toPandas()
 
 
-from sklearn.model_selection import train_test_split
-from sklearn.feature_extraction.text import TfidfVectorizer
 
 X_train_text, X_test_text, y_train, y_test = train_test_split(
     pdf["clean_text"], pdf["sentiment_label"], test_size=0.2, random_state=42

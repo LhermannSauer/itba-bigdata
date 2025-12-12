@@ -3,8 +3,18 @@ import logging
 import datetime
 import json
 import pyspark.sql.functions as F
-from pyspark.sql.types import *
+from pyspark.sql.types import (
+    StructType,
+    StructField,
+    StringType,
+    IntegerType,
+    FloatType,
+    DateType,
+    TimestampType,
+    BooleanType,
+)
 from pyspark.sql import DataFrame
+from pyspark.sql import SparkSession
 from pyspark.sql.window import Window
 
 SOURCE_PATH = "/Volumes/workspace/sentiment_analysis/raw"
@@ -45,6 +55,12 @@ bronze_schema = StructType([
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s [%(levelname)s] %(message)s")
+
+# Ensure a SparkSession is available when running outside Databricks
+try:
+    spark
+except NameError:
+    spark = SparkSession.builder.master("local[1]").appName("itba-bigdata").getOrCreate()
 
 
 def read_source(spark) -> DataFrame:
@@ -318,7 +334,6 @@ def gold_ingestion():
             mlflow.log_metric(f"label_ratio_{label}", ratio)
 
         # Average review length
-        from pyspark.sql import functions as F
         avg_length = df_gold.select(F.avg(F.length("clean_text"))).first()[0]
         mlflow.log_metric("avg_review_length", float(avg_length))
 
