@@ -5,8 +5,14 @@ import logging
 import mlflow
 import pyspark.sql.functions as F
 from pyspark.sql import DataFrame, SparkSession
-from pyspark.sql.types import (DateType, FloatType, IntegerType, StringType,
-                               StructField, StructType)
+from pyspark.sql.types import (
+    DateType,
+    FloatType,
+    IntegerType,
+    StringType,
+    StructField,
+    StructType,
+)
 from pyspark.sql.window import Window
 
 SOURCE_PATH = "/Volumes/workspace/sentiment_analysis/raw"

@@ -3,6 +3,7 @@ import mlflow.sklearn
 from mlflow.models.signature import infer_signature
 from pyspark.sql import SparkSession
 from sklearn.feature_extraction.text import TfidfVectorizer
+
 # MODELS
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import f1_score, precision_score, recall_score
