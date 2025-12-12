@@ -9,10 +9,10 @@ except ImportError:
 
 
 class TestDataIngestion(unittest.TestCase):
-    """Unit tests for data_ingestion.py"""
+    """Unit tests for data_ingestion.py."""
 
     def test_constants_exist(self):
-        """Test that required constants are defined"""
+        """Test that required constants are defined."""
         self.assertTrue(hasattr(di, "SOURCE_PATH"))
         self.assertTrue(hasattr(di, "BRONZE_PATH"))
         self.assertTrue(hasattr(di, "SILVER_PATH"))
@@ -23,7 +23,7 @@ class TestDataIngestion(unittest.TestCase):
         self.assertIsInstance(di.BRONZE_PATH, str)
 
     def test_required_fields(self):
-        """Test that REQUIRED_FIELDS contains correct fields"""
+        """Test that REQUIRED_FIELDS contains correct fields."""
         expected_fields = [
             "review_id",
             "product_id",
@@ -37,7 +37,7 @@ class TestDataIngestion(unittest.TestCase):
         self.assertEqual(len(di.REQUIRED_FIELDS), 6)
 
     def test_sentiment_mapping(self):
-        """Test sentiment mapping is correct"""
+        """Test sentiment mapping is correct."""
         self.assertEqual(di.SENTIMENT_MAP["negative"], [1, 2])
         self.assertEqual(di.SENTIMENT_MAP["neutral"], [3])
         self.assertEqual(di.SENTIMENT_MAP["positive"], [4, 5])
@@ -48,7 +48,7 @@ class TestDataIngestion(unittest.TestCase):
         self.assertIn("positive", di.SENTIMENT_MAP)
 
     def test_functions_exist(self):
-        """Test that all main functions exist"""
+        """Test that all main functions exist."""
         # Check main functions exist
         self.assertTrue(hasattr(di, "bronze_ingestion"))
         self.assertTrue(hasattr(di, "bronze_validation"))

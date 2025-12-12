@@ -48,18 +48,18 @@ def run_experiment(
     y_test,
     test_size=0.2,
 ):
-    """
-    Run an ML experiment in sklearn and log results to MLflow.
-    Parameters:
+    """Run an ML experiment in sklearn and log results to MLflow.
+
+    Parameters
+    ----------
         model_name: str
         classifier: sklearn-like model (including SOMClassifier)
         params: dict of hyperparameters to log
         seed: int
         X: feature matrix (numpy or scipy sparse)
         y: label vector
-        test_size: float
+        test_size: float.
     """
-
     # ---- MLflow experiment ----
     with mlflow.start_run(run_name=f"{model_name}"):
         # Log parameters
