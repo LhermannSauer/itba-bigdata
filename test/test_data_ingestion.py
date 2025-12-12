@@ -1,4 +1,6 @@
-# tests/test_data_ingestion_unittest.py
+# Unit tests for the data ingestion module.
+"""Unit tests for the data ingestion module."""
+
 import unittest
 
 try:

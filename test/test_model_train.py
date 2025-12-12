@@ -1,4 +1,6 @@
-# tests/test_data_ingestion_unittest.py
+# Unit tests for the model training module.
+"""Unit tests for the model training module."""
+
 import unittest
 
 try:

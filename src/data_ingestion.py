@@ -1,3 +1,11 @@
+"""Data ingestion utilities for the sentiment analysis pipeline.
+
+This module contains functions to read raw source data into a bronze
+layer, perform validations, transform to silver, and produce a gold
+dataset ready for modeling. It also includes small text-cleaning
+helpers and mapping utilities.
+"""
+
 import datetime
 import json
 import logging
@@ -58,15 +66,25 @@ logging.basicConfig(
 )
 
 # Ensure a SparkSession is available when running outside Databricks
-try:
-    spark
-except NameError:
+if "spark" not in globals():
     spark = (
         SparkSession.builder.master("local[1]").appName("itba-bigdata").getOrCreate()
     )
 
 
 def read_source(spark) -> DataFrame:
+    """Read raw source files into a Spark DataFrame using the bronze schema.
+
+    Parameters
+    ----------
+    spark : SparkSession
+        SparkSession to use for reading data.
+
+    Returns
+    -------
+    DataFrame
+        A Spark DataFrame with the bronze schema applied.
+    """
     logging.info(f"Reading source data from {SOURCE_PATH}")
     df = (
         spark.read.option("header", "true")
@@ -78,17 +96,23 @@ def read_source(spark) -> DataFrame:
 
 
 def add_metadata(df: DataFrame) -> DataFrame:
+    """Add ingestion metadata columns to the given DataFrame.
+
+    Adds `ingestion_timestamp` and `source_file` columns.
+    """
     return df.withColumn("ingestion_timestamp", F.current_timestamp()).withColumn(
         "source_file", F.lit(SOURCE_PATH)
     )
 
 
 def write_bronze(df: DataFrame):
+    """Write the bronze DataFrame to parquet at the BRONZE_PATH."""
     df.write.mode("overwrite").parquet(BRONZE_PATH)
     logging.info(f"Bronze data written to {BRONZE_PATH}")
 
 
 def bronze_ingestion():
+    """Run the bronze ingestion pipeline: read source, add metadata and write."""
     with mlflow.start_run():
         df = read_source(spark)
         row_count = df.count()
@@ -104,6 +128,7 @@ def bronze_ingestion():
 
 
 def bronze_validation():
+    """Validate the bronze dataset and log basic metrics to MLflow."""
     EXPERIMENT_NAME = "bronze_validation"
     mlflow.set_experiment(f"/Users/lhermannsauer@itba.edu.ar/{EXPERIMENT_NAME}")
 
@@ -191,6 +216,7 @@ def bronze_validation():
 
 # SILVER DATA ingestion
 def silver_ingestion():
+    """Transform bronze data to silver: cast types, clean and deduplicate."""
     # Load Bronze data
     bronze_df = spark.read.parquet(BRONZE_PATH)
     bronze_count = bronze_df.count()
@@ -261,6 +287,11 @@ def silver_ingestion():
 
 # GOLD DATA INGESTION
 def basic_text_cleaning(df, text_col="review_body", out_col="clean_text"):
+    """Perform basic text cleaning on `text_col` and add derived columns.
+
+    The function lowercases text, strips HTML tags, normalizes quotes,
+    and adds `n_chars` and `n_words` derived columns.
+    """
     expr = F.col(text_col)
     expr = F.lower(F.regexp_replace(expr, r"\s+", " "))
     expr = F.regexp_replace(expr, r"<[^>]+>", "")
@@ -272,21 +303,32 @@ def basic_text_cleaning(df, text_col="review_body", out_col="clean_text"):
 
 
 def map_ratings_to_labels(df, rating_col="star_rating", out_col="sentiment_label"):
+    """Map numeric ratings to sentiment labels (negative/neutral/positive)."""
     mapping = SENTIMENT_MAP
     expr = (
-        F.when(F.col(rating_col).isin(mapping["negative"]), F.lit("negative"))
-        .when(F.col(rating_col).isin(mapping["neutral"]), F.lit("neutral"))
-        .when(F.col(rating_col).isin(mapping["positive"]), F.lit("positive"))
+        F.when(
+            F.col(rating_col).isin(mapping["negative"]),
+            F.lit("negative"),
+        )
+        .when(
+            F.col(rating_col).isin(mapping["neutral"]),
+            F.lit("neutral"),
+        )
+        .when(
+            F.col(rating_col).isin(mapping["positive"]),
+            F.lit("positive"),
+        )
         .otherwise(F.lit("neutral"))
     )
     return df.withColumn(out_col, expr)
 
 
 def gold_ingestion():
+    """Produce the gold dataset: filter, clean text and compute metrics."""
     df = spark.read.parquet(SILVER_PATH)
-    print(
-        f"Loaded Silver dataset with {df.count()} rows and {len(df.columns)} columns."
-    )
+    rows = df.count()
+    cols = len(df.columns)
+    print(f"Loaded Silver dataset with {rows} rows and {cols} columns.")
     missing = [c for c in REQUIRED_FIELDS if c not in df.columns]
     if missing:
         raise ValueError(f"Missing required fields: {missing}")
@@ -309,9 +351,10 @@ def gold_ingestion():
     Window.partitionBy("user_id").orderBy("review_date")
 
     df = df.withColumn("review_rank", F.rank().over(product_window))
+    avg_window = product_window.rowsBetween(-5, 0)
     df = df.withColumn(
         "avg_sentiment_product",
-        F.avg("sentiment_label").over(product_window.rowsBetween(-5, 0)),
+        F.avg("sentiment_label").over(avg_window),
     )
 
     selected_cols = [
@@ -382,6 +425,7 @@ def gold_ingestion():
 
 
 def main():
+    """Execute the end-to-end ingestion pipeline (bronze->silver->gold)."""
     bronze_ingestion()
     bronze_validation()
     silver_ingestion()

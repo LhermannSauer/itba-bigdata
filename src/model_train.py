@@ -1,3 +1,9 @@
+"""Model training utilities and baseline experiments for sentiment analysis.
+
+This module provides simple sklearn baseline experiments and logging to
+MLflow. It is intended for local experimentation and CI smoke tests.
+"""
+
 import mlflow
 import mlflow.sklearn
 from mlflow.models.signature import infer_signature
@@ -24,9 +30,7 @@ mlflow.set_registry_uri("databricks-uc")
 mlflow.set_tracking_uri("databricks")
 
 # Ensure a SparkSession is available when running outside Databricks
-try:
-    spark
-except NameError:
+if "spark" not in globals():
     spark = (
         SparkSession.builder.master("local[1]").appName("itba-bigdata").getOrCreate()
     )
@@ -52,13 +56,27 @@ def run_experiment(
 
     Parameters
     ----------
-        model_name: str
-        classifier: sklearn-like model (including SOMClassifier)
-        params: dict of hyperparameters to log
-        seed: int
-        X: feature matrix (numpy or scipy sparse)
-        y: label vector
-        test_size: float.
+    model_name : str
+        Human-readable name for the experiment/model.
+    classifier
+        A scikit-learn compatible estimator with ``fit``/``predict``.
+    params : dict
+        Hyperparameters to log in MLflow.
+    X_train
+        Training feature matrix.
+    X_test
+        Test feature matrix.
+    y_train
+        Training labels.
+    y_test
+        Test labels.
+    test_size : float
+        Fraction of data held out for testing (unused here).
+
+    Returns
+    -------
+    Tuple[estimator, float]
+        The trained model and the F1 score on the test set.
     """
     # ---- MLflow experiment ----
     with mlflow.start_run(run_name=f"{model_name}"):
