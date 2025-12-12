@@ -48,5 +48,3 @@ La selección se basó en:
 - Robustez del modelo ante clases desbalanceadas.
 - Eficiencia dentro de las restricciones de Databricks Serverless.
 - Estabilidad del entrenamiento en grandes volúmenes de datos vectorizados.
-
-

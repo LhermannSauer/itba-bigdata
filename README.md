@@ -78,5 +78,3 @@ python -m black --check .
 python -m isort --check-only .
 python -m ruff check src test
 ```
-
-
