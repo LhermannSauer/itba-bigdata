@@ -86,7 +86,7 @@ def bronze_ingestion():
 
 def bronze_validation():
     EXPERIMENT_NAME = "bronze_validation"
-    mlflow.set_experiment(f'/Users/lhermannsauer@itba.edu.ar/{EXPERIMENT_NAME}')
+    mlflow.set_experiment(f'/Users/nmoccagatta@itba.edu.ar/{EXPERIMENT_NAME}')
 
     print(f"Reading Bronze data from: {BRONZE_PATH}")
     df = spark.read.parquet(BRONZE_PATH)
